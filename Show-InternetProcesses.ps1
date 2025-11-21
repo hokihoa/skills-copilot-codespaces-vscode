@@ -73,6 +73,7 @@ try {
     }
 
     # Get UDP endpoints (they don't have a "state" like TCP)
+    # Note: UDP is connectionless, so we only filter LocalAddress (RemoteAddress doesn't exist for UDP)
     $udpEndpoints = Get-NetUDPEndpoint | Where-Object {
         $_.LocalAddress -ne "127.0.0.1" -and 
         $_.LocalAddress -ne "::1" -and
@@ -107,8 +108,8 @@ try {
         Write-Host ("=" * 80) -ForegroundColor Green
         Write-Host ""
 
-        # Group by process name and PID
-        $grouped = $results | Group-Object -Property ProcessName, PID | Sort-Object Name
+        # Group by PID (unique per process) but display with process name
+        $grouped = $results | Group-Object -Property PID | Sort-Object { ($_.Group[0]).ProcessName }
 
         foreach ($group in $grouped) {
             $firstItem = $group.Group[0]

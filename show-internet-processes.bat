@@ -23,7 +23,30 @@ if %errorLevel% == 0 (
 
 REM Run PowerShell command to get network connections
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-"Get-NetTCPConnection | Where-Object {$_.State -eq 'Established' -and $_.RemoteAddress -ne '127.0.0.1' -and $_.RemoteAddress -ne '::1'} | ForEach-Object { $proc = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue; if ($proc) { [PSCustomObject]@{Process=$proc.ProcessName; PID=$_.OwningProcess; LocalAddress=$_.LocalAddress; LocalPort=$_.LocalPort; RemoteAddress=$_.RemoteAddress; RemotePort=$_.RemotePort; State=$_.State} } } | Group-Object Process | ForEach-Object { Write-Host \"\"; Write-Host \"Process: $($_.Name)\" -ForegroundColor Yellow; $_.Group | ForEach-Object { Write-Host \"  PID: $($_.PID) | $($_.LocalAddress):$($_.LocalPort) -> $($_.RemoteAddress):$($_.RemotePort) [$($_.State)]\" -ForegroundColor Cyan } }"
+"Get-NetTCPConnection | ^
+Where-Object {$_.State -eq 'Established' -and $_.RemoteAddress -ne '127.0.0.1' -and $_.RemoteAddress -ne '::1'} | ^
+ForEach-Object { ^
+  $proc = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue; ^
+  if ($proc) { ^
+    [PSCustomObject]@{ ^
+      Process=$proc.ProcessName; ^
+      PID=$_.OwningProcess; ^
+      LocalAddress=$_.LocalAddress; ^
+      LocalPort=$_.LocalPort; ^
+      RemoteAddress=$_.RemoteAddress; ^
+      RemotePort=$_.RemotePort; ^
+      State=$_.State ^
+    } ^
+  } ^
+} | ^
+Group-Object Process | ^
+ForEach-Object { ^
+  Write-Host ''; ^
+  Write-Host \"Process: $($_.Name)\" -ForegroundColor Yellow; ^
+  $_.Group | ForEach-Object { ^
+    Write-Host \"  PID: $($_.PID) | $($_.LocalAddress):$($_.LocalPort) -> $($_.RemoteAddress):$($_.RemotePort) [$($_.State)]\" -ForegroundColor Cyan ^
+  } ^
+}"
 
 echo.
 echo =====================================================
