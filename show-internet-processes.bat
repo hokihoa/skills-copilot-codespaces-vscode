@@ -39,12 +39,13 @@ ForEach-Object { ^
     } ^
   } ^
 } | ^
-Group-Object Process | ^
+Group-Object PID | ^
+Sort-Object { $_.Group[0].Process } | ^
 ForEach-Object { ^
   Write-Host ''; ^
-  Write-Host \"Process: $($_.Name)\" -ForegroundColor Yellow; ^
+  Write-Host \"Process: $($_.Group[0].Process) (PID: $($_.Name))\" -ForegroundColor Yellow; ^
   $_.Group | ForEach-Object { ^
-    Write-Host \"  PID: $($_.PID) | $($_.LocalAddress):$($_.LocalPort) -> $($_.RemoteAddress):$($_.RemotePort) [$($_.State)]\" -ForegroundColor Cyan ^
+    Write-Host \"  $($_.LocalAddress):$($_.LocalPort) -> $($_.RemoteAddress):$($_.RemotePort) [$($_.State)]\" -ForegroundColor Cyan ^
   } ^
 }"
 

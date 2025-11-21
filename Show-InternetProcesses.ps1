@@ -37,9 +37,16 @@ Write-Host "Gathering network connections and process information..." -Foregroun
 Write-Host ""
 
 try {
-    # Get all TCP connections
+    # Define filter script block for non-localhost addresses
+    $filterLocalhost = {
+        $_.LocalAddress -ne "127.0.0.1" -and 
+        $_.LocalAddress -ne "::1" -and
+        $_.LocalAddress -ne "0.0.0.0" -and
+        $_.LocalAddress -ne "::"
+    }
+
+    # Get all TCP connections, filtering by RemoteAddress to exclude localhost
     $connections = Get-NetTCPConnection | Where-Object {
-        # Filter out local-only connections (localhost)
         $_.RemoteAddress -ne "127.0.0.1" -and 
         $_.RemoteAddress -ne "::1" -and
         $_.RemoteAddress -ne "0.0.0.0" -and
@@ -74,12 +81,7 @@ try {
 
     # Get UDP endpoints (they don't have a "state" like TCP)
     # Note: UDP is connectionless, so we only filter LocalAddress (RemoteAddress doesn't exist for UDP)
-    $udpEndpoints = Get-NetUDPEndpoint | Where-Object {
-        $_.LocalAddress -ne "127.0.0.1" -and 
-        $_.LocalAddress -ne "::1" -and
-        $_.LocalAddress -ne "0.0.0.0" -and
-        $_.LocalAddress -ne "::"
-    }
+    $udpEndpoints = Get-NetUDPEndpoint | Where-Object $filterLocalhost
 
     foreach ($udp in $udpEndpoints) {
         try {
